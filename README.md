@@ -27,11 +27,11 @@ The server provides a comprehensive set of tools for interacting with Google Cal
 
     -   **For `stdio` transport:**
         ```bash
-        python google-calendar_mcp_server.py
+      python server.py
         ```
     -   **For `sse` (Server-Sent Events) transport:**
         ```bash
-        python google-calendar_mcp_server.py --transport sse --host 127.0.0.1 --port 8001
+      python server.py --transport sse --host 127.0.0.1 --port 8001
         ```
 
 ## Usage Examples
