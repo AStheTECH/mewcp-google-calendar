@@ -4,10 +4,11 @@ from typing import List
 
 from fastmcp import FastMCP
 
-from .schemas import ApiObjectResponse, OAuthTokenData
+from .schemas import ApiObjectResponse
 from .service import get_service
 
 logger = logging.getLogger("calendar-mcp-server")
+
 
 class _ToolCollector:
     def __init__(self):
@@ -32,13 +33,11 @@ def register_tools(real_mcp: FastMCP) -> None:
 @mcp.tool(
     name="list_calendars", description="List all calendars accessible by the user"
 )
-def list_calendars(
-    oauth_token: OAuthTokenData,
-) -> ApiObjectResponse:
+def list_calendars() -> ApiObjectResponse:
     """List all calendars"""
     logger.info("Executing list_calendars")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         calendars_result = service.calendarList().list().execute()
         calendars = calendars_result.get("items", [])
@@ -51,11 +50,11 @@ def list_calendars(
 
 
 @mcp.tool(name="get_calendar", description="Get details of a specific calendar")
-def get_calendar(oauth_token: OAuthTokenData, calendar_id: str = "primary") -> ApiObjectResponse:
+def get_calendar(calendar_id: str = "primary") -> ApiObjectResponse:
     """Get calendar details"""
     logger.info(f"Executing get_calendar for: {calendar_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         calendar = service.calendars().get(calendarId=calendar_id).execute()
 
@@ -68,12 +67,12 @@ def get_calendar(oauth_token: OAuthTokenData, calendar_id: str = "primary") -> A
 
 @mcp.tool(name="create_calendar", description="Create a new calendar")
 def create_calendar(
-    oauth_token: OAuthTokenData, summary: str, description: str = "", timezone: str = "UTC"
+    summary: str, description: str = "", timezone: str = "UTC"
 ) -> ApiObjectResponse:
     """Create a new calendar"""
     logger.info(f"Executing create_calendar: {summary}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         calendar = {
             "summary": summary,
@@ -94,11 +93,11 @@ def create_calendar(
 
 
 @mcp.tool(name="delete_calendar", description="Delete a calendar")
-def delete_calendar(oauth_token: OAuthTokenData, calendar_id: str) -> ApiObjectResponse:
+def delete_calendar(calendar_id: str) -> ApiObjectResponse:
     """Delete a calendar"""
     logger.info(f"Executing delete_calendar for: {calendar_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         service.calendars().delete(calendarId=calendar_id).execute()
 
@@ -114,7 +113,6 @@ def delete_calendar(oauth_token: OAuthTokenData, calendar_id: str) -> ApiObjectR
     description="List events from a calendar within a time range. Use ISO 8601 format for time_min/time_max: 'YYYY-MM-DDTHH:MM:SSZ' (e.g., '2026-01-08T00:00:00Z'). Defaults to events starting from now if time_min not specified.",
 )
 def list_events(
-    oauth_token: OAuthTokenData,
     calendar_id: str = "primary",
     max_results: int = 10,
     time_min: str = "",
@@ -124,7 +122,7 @@ def list_events(
     """List calendar events"""
     logger.info(f"Executing list_events for calendar: {calendar_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         # Default to now if no time_min specified
         if not time_min:
@@ -155,11 +153,11 @@ def list_events(
 
 
 @mcp.tool(name="get_event", description="Get details of a specific event")
-def get_event(oauth_token: OAuthTokenData, event_id: str, calendar_id: str = "primary") -> ApiObjectResponse:
+def get_event(event_id: str, calendar_id: str = "primary") -> ApiObjectResponse:
     """Get event details"""
     logger.info(f"Executing get_event for: {event_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
 
@@ -175,7 +173,6 @@ def get_event(oauth_token: OAuthTokenData, event_id: str, calendar_id: str = "pr
     description="Create a new calendar event. Use ISO 8601 format for start_time and end_time: 'YYYY-MM-DDTHH:MM:SS' (e.g., '2026-01-08T14:30:00' for Jan 8, 2026 at 2:30 PM). You can also include timezone offset like '2026-01-08T14:30:00-05:00' for EST.",
 )
 def create_event(
-    oauth_token: OAuthTokenData,
     summary: str,
     start_time: str,
     end_time: str,
@@ -188,7 +185,7 @@ def create_event(
     """Create a calendar event"""
     logger.info(f"Executing create_event: {summary}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         event = {
             "summary": summary,
@@ -222,13 +219,11 @@ def create_event(
     name="create_quick_event",
     description="Create an event using natural language text (e.g., 'Lunch with John tomorrow at 12pm')",
 )
-def create_quick_event(
-    oauth_token: OAuthTokenData, text: str, calendar_id: str = "primary"
-) -> ApiObjectResponse:
+def create_quick_event(text: str, calendar_id: str = "primary") -> ApiObjectResponse:
     """Create event using quick add"""
     logger.info(f"Executing create_quick_event: {text}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         event = service.events().quickAdd(calendarId=calendar_id, text=text).execute()
 
@@ -244,7 +239,6 @@ def create_quick_event(
     description="Update an existing calendar event. Use ISO 8601 format for start_time and end_time: 'YYYY-MM-DDTHH:MM:SS' (e.g., '2026-01-08T14:30:00'). Leave fields empty to keep existing values.",
 )
 def update_event(
-    oauth_token: OAuthTokenData,
     event_id: str,
     calendar_id: str = "primary",
     summary: str = "",
@@ -257,7 +251,7 @@ def update_event(
     """Update a calendar event"""
     logger.info(f"Executing update_event for: {event_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         # Get existing event
         event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
@@ -294,11 +288,13 @@ def update_event(
 
 
 @mcp.tool(name="delete_event", description="Delete a calendar event")
-def delete_event(oauth_token: OAuthTokenData, event_id: str, calendar_id: str = "primary") -> ApiObjectResponse:
+def delete_event(
+    event_id: str, calendar_id: str = "primary"
+) -> ApiObjectResponse:
     """Delete a calendar event"""
     logger.info(f"Executing delete_event for: {event_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
 
@@ -313,12 +309,14 @@ def delete_event(oauth_token: OAuthTokenData, event_id: str, calendar_id: str = 
     name="search_events", description="Search for events containing specific text"
 )
 def search_events(
-    oauth_token: OAuthTokenData, query: str, calendar_id: str = "primary", max_results: int = 10
+    query: str,
+    calendar_id: str = "primary",
+    max_results: int = 10,
 ) -> ApiObjectResponse:
     """Search calendar events"""
     logger.info(f"Executing search_events with query: {query}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         events_result = (
             service.events()
@@ -345,12 +343,14 @@ def search_events(
     name="get_upcoming_events", description="Get upcoming events for the next N days"
 )
 def get_upcoming_events(
-    oauth_token: OAuthTokenData, days: int = 7, calendar_id: str = "primary", max_results: int = 10
+    days: int = 7,
+    calendar_id: str = "primary",
+    max_results: int = 10,
 ) -> ApiObjectResponse:
     """Get upcoming events"""
     logger.info(f"Executing get_upcoming_events for next {days} days")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         now = datetime.utcnow()
         time_min = now.isoformat() + "Z"
@@ -379,11 +379,11 @@ def get_upcoming_events(
 
 
 @mcp.tool(name="get_todays_events", description="Get all events for today")
-def get_todays_events(oauth_token: OAuthTokenData, calendar_id: str = "primary") -> ApiObjectResponse:
+def get_todays_events(calendar_id: str = "primary") -> ApiObjectResponse:
     """Get today's events"""
     logger.info("Executing get_todays_events")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         now = datetime.utcnow()
         time_min = (
@@ -417,7 +417,6 @@ def get_todays_events(oauth_token: OAuthTokenData, calendar_id: str = "primary")
 
 @mcp.tool(name="add_attendees", description="Add attendees to an existing event")
 def add_attendees(
-    oauth_token: OAuthTokenData,
     event_id: str,
     attendee_emails: List[str],
     calendar_id: str = "primary",
@@ -425,7 +424,7 @@ def add_attendees(
     """Add attendees to an event"""
     logger.info(f"Executing add_attendees for event: {event_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         # Get existing event
         event = service.events().get(calendarId=calendar_id, eventId=event_id).execute()
@@ -461,12 +460,14 @@ def add_attendees(
     description="Get free/busy information for calendars. Use ISO 8601 format with 'Z' suffix: 'YYYY-MM-DDTHH:MM:SSZ' (e.g., '2026-01-08T09:00:00Z' for 9 AM UTC).",
 )
 def get_free_busy(
-    oauth_token: OAuthTokenData, time_min: str, time_max: str, calendar_ids: List[str] = []
+    time_min: str,
+    time_max: str,
+    calendar_ids: List[str] = [],
 ) -> ApiObjectResponse:
     """Get free/busy information"""
     logger.info("Executing get_free_busy")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         if not calendar_ids:
             calendar_ids = ["primary"]
@@ -488,7 +489,6 @@ def get_free_busy(
 
 @mcp.tool(name="move_event", description="Move an event to a different calendar")
 def move_event(
-    oauth_token: OAuthTokenData,
     event_id: str,
     source_calendar_id: str,
     destination_calendar_id: str,
@@ -496,7 +496,7 @@ def move_event(
     """Move event to another calendar"""
     logger.info(f"Executing move_event: {event_id}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         moved_event = (
             service.events()
@@ -520,7 +520,6 @@ def move_event(
     description="Create a recurring calendar event. Use ISO 8601 format for times: 'YYYY-MM-DDTHH:MM:SS'. Recurrence examples: 'RRULE:FREQ=DAILY' (daily), 'RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR' (Mon/Wed/Fri), 'RRULE:FREQ=MONTHLY;BYMONTHDAY=15' (15th of each month).",
 )
 def create_recurring_event(
-    oauth_token: OAuthTokenData,
     summary: str,
     start_time: str,
     end_time: str,
@@ -533,7 +532,7 @@ def create_recurring_event(
     """Create a recurring event"""
     logger.info(f"Executing create_recurring_event: {summary}")
     try:
-        service = get_service(oauth_token)
+        service = get_service()
 
         event = {
             "summary": summary,
