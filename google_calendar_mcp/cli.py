@@ -7,7 +7,7 @@ def parse_args():
         "-t",
         "--transport",
         help="Transport method for MCP (Allowed Values: 'stdio', 'sse', or 'streamable-http')",
-        default=None,
+        default="streamable-http",
     )
     parser.add_argument("--host", help="Host to bind the server to", default=None)
     parser.add_argument(
