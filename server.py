@@ -14,8 +14,7 @@ configure_logging()
 logger = logging.getLogger("calendar-mcp-server")
 
 backend = HeaderCredentialBackend()
-mcp = FastMCP(
-    "MewCP Google Calendar MCP Server",
+mcp = FastMCP("MewCP Google Calendar MCP Server",
     # stateless_http=True,
     middleware=[CredentialMiddleware(backend, "oauth")],
 )
