@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse
 
 from google_calendar_mcp.cli import parse_args
 from google_calendar_mcp.config import BREAKING_CHANGES, SERVER_VERSION, configure_logging
-from google_calendar_mcp.tools import TOOL_REGISTRY, register_tools
+from google_calendar_mcp.tools import register_tools
 
 configure_logging()
 logger = logging.getLogger("calendar-mcp-server")
@@ -33,10 +33,6 @@ async def health_check(request):
         "breaking_changes": BREAKING_CHANGES,
     })
 
-
-@mcp.custom_route("/tool-scopes", methods=["GET"])
-async def tool_scopes(request):
-    return JSONResponse({"tool_scopes": TOOL_REGISTRY})
 
 
 if __name__ == "__main__":

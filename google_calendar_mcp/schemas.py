@@ -188,6 +188,15 @@ class EventResult(ToolResult):
     data: EventData | None = None
 
 
+class EventUpdateData(BaseModel):
+    before: EventData
+    after: EventData
+
+
+class EventUpdateResult(ToolResult):
+    data: EventUpdateData | None = None
+
+
 class MessageResult(ToolResult):
     data: MessageData | None = None
 

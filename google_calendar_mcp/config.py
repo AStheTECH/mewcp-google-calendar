@@ -3,7 +3,7 @@ import os
 
 from pythonjsonlogger import jsonlogger
 
-SERVER_VERSION = "v1.1.0"
+SERVER_VERSION = "v1.2.0"
 
 # List breaking changes introduced in this version. Empty for non-breaking releases.
 # Each entry: {"tool": str, "change": str, "migration": str}
