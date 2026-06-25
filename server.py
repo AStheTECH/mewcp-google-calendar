@@ -22,8 +22,6 @@ mcp = FastMCP(
 )
 register_tools(mcp)
 
-app = mcp.http_app(path="/mcp", transport="streamable-http", stateless_http=True)
-
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
@@ -33,6 +31,9 @@ async def health_check(request):
         "version": SERVER_VERSION,
         "breaking_changes": BREAKING_CHANGES,
     })
+
+
+app = mcp.http_app(path="/mcp", transport="streamable-http", stateless_http=True)
 
 
 
