@@ -1,44 +1,15 @@
-from __future__ import annotations
-
-import logging
-
 from fastmcp import FastMCP
-from googleapiclient.errors import HttpError
 
-logger = logging.getLogger("calendar-mcp-server")
-
-
-def _upstream_error(e: HttpError) -> tuple[int, bool, int | None]:
-    """Extract statusCode, retriable, retry_after_seconds from an HttpError."""
-    status = int(e.resp.status)
-    retriable = status in (429, 500, 502, 503)
-    retry_after: int | None = None
-    if status == 429:
-        raw = e.resp.get("retry-after") or e.resp.get("Retry-After")
-        retry_after = int(raw) if raw else None
-        if retry_after is None:
-            retriable = False
-    return status, retriable, retry_after
+from .calendars_tools import register_calendars_tools
+from .events_delete_tools import register_events_delete_tools
+from .events_read_tools import register_events_read_tools
+from .events_write_tools import register_events_write_tools
+from .freebusy_tools import register_freebusy_tools
 
 
-class _ToolCollector:
-    def __init__(self):
-        self.items = []
-
-    def tool(self, *args, **kwargs):
-        def decorator(func):
-            self.items.append((args, kwargs, func))
-            return func
-        return decorator
-
-
-mcp = _ToolCollector()
-
-
-def register_tools(real_mcp: FastMCP) -> None:
-    for args, kwargs, func in mcp.items:
-        real_mcp.tool(*args, **kwargs)(func)
-
-
-# Import sub-modules to register all tools via @mcp.tool decorators
-from . import calendars, events_read, events_write, events_delete, freebusy  # noqa: E402, F401
+def register_tools(mcp: FastMCP) -> None:
+    register_events_read_tools(mcp)
+    register_events_write_tools(mcp)
+    register_events_delete_tools(mcp)
+    register_calendars_tools(mcp)
+    register_freebusy_tools(mcp)
