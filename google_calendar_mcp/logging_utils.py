@@ -23,26 +23,21 @@ class ToolLogger:
         self._log = logger
         self._tool = tool
         self._start = time.monotonic()
-        try:
-            cred = get_credentials()
-            self._rid = (cred.extra or {}).get("request_id")
-        except Exception:
-            self._rid = None
-        self._log.info("tool=%s status=started request_id=%s", self._tool, self._rid)
+        self._log.info("tool=%s status=started", self._tool)
 
     def _ms(self) -> int:
         return round((time.monotonic() - self._start) * 1000)
 
     def success(self) -> None:
         self._log.info(
-            "tool=%s status=ok duration_ms=%d request_id=%s",
-            self._tool, self._ms(), self._rid,
+            "tool=%s status=ok duration_ms=%d",
+            self._tool, self._ms(),
         )
 
     def failure(self, code: str, message: str) -> None:
         self._log.error(
-            "tool=%s status=error code=%s duration_ms=%d request_id=%s msg=%s",
-            self._tool, code, self._ms(), self._rid, message,
+            "tool=%s status=error code=%s duration_ms=%d msg=%s",
+            self._tool, code, self._ms(), message,
         )
 
 
